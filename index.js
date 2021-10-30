@@ -50,9 +50,9 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/buy?currency=${x.id}`
         }).then(res=>{
-             //console.log(res.data.data)
+             console.log(res.data.data)
          }).catch(err=>{
-             //console.log(err)
+             console.log(err)
          })
         
     })
@@ -72,7 +72,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/sell?currency=${x.id}`
         }).then(res=>{
-             //console.log(res.data.data)
+            console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -95,7 +95,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/spot?currency=${x.id}`
         }).then(res=>{
-             //console.log(res.data.data)
+             console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -117,7 +117,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/time`
         }).then(res=>{
-             //console.log(res.data.data)
+             console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -139,30 +139,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/exchange-rates`
         }).then(res=>{
-            //console.log(res.data)
-         }).catch(err=>{
-             //console.log(err)
-         })
-        
-    })
-});
-})
-//reports
-
-coinbaseProConfig({
-    method: 'GET',
-}).then(res=>{
-let data =  res.data
-data.forEach(element => {
-    let arr = []
-    arr.push(element)
-    arr.forEach((x)=>{
-        
-         coinbaseProConfig({
-            method: 'GET',
-            baseURL: `https://api.coinbase.com/fees`
-        }).then(res=>{
-             console.log(res)
+            console.log(res.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -171,4 +148,35 @@ data.forEach(element => {
 });
 })
 
+
+const CoinbasePro = require('coinbase-pro');
+var coinbaseWs = '';
+
+function connect() {
+    coinbaseWs = new CoinbasePro.WebsocketClient(
+        ['BTC-USD'],
+        'wss://ws-feed.pro.coinbase.com',
+        {
+            key: 'xxxx',
+            secret: 'xxxx',
+            passphrase: 'xxxx',
+        },
+        { channels: ['matches'] }
+    );  
+
+    coinbaseWs.on('message', async data => { 
+        console.log(data)  
+    });
+
+    coinbaseWs.on('error', err => {
+      console.error("Connection with Coinbase websocket failed with error: " + err);
+      console.log("Error stack trace: " + err.stack);
+    });
+
+    coinbaseWs.on('close', () => {
+      console.error("Connection with Coinbase websocket closed!");
+    });
+}
+
+connect();
   //${req.protocol}://${req.get('host')}${req.originalUrl}: moment().format()
