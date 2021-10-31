@@ -3,7 +3,9 @@ const express = require('express')
 const axios = require('axios')
 const dotenv = require('dotenv').config()
 const crypto = require("crypto");
-const app = express()
+const webSocketServer = require('websocket').server
+const jinky = express()
+const httpServer = require('http').createServer(jinky)
 //Config vars
 const PORT = 3000 || 5000
 const key = '5604a6f68fcf0ce39ea5aa020684b8dd'
@@ -11,7 +13,44 @@ const secret = 'SlCBdWPvsWxVGQwIhZSXsqkPa/dy+AXIwq6fVRs1ZIpIW1rkrs3xT/RG3JkULNSV
 const passPhrase = '8bystr00t3g'
 const timestamp = Math.floor(new Date().getTime() / 1000)
 
-//create Hash for api secret key
+/*___________________________SERVER___________________________________________*/
+
+//websocket server and http server & link /*no wss origin*/ listening on Ports  3000/5000
+httpServer.listen(PORT, ()=> (console.log(new Date() + `Server is listening on port ${PORT}`)))
+//websocket server
+wsServer = new webSocketServer({
+    httpServer: httpServer,
+    autoAcceptConnections: true,
+})
+function originIsAllowed(origin) {
+    // put logic here to detect whether the specified origin is allowed.
+    return true;
+  }
+  wsServer.on('request', function(request) {
+      if (!originIsAllowed(request.origin)) {
+        // Make sure we only accept requests from an allowed origin
+        request.reject();
+        console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+        return;
+      }
+      var connection = request.accept('echo-protocol', request.origin);
+      console.log((new Date()) + ' Connection accepted.');
+      connection.on('message', function(message) {
+          if (message.type === 'utf8') {
+              console.log('Received Message: ' + message.utf8Data);
+              connection.sendUTF(message.utf8Data);
+          }
+          else if (message.type === 'binary') {
+              console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+              connection.sendBytes(message.binaryData);
+          }
+      });
+      connection.on('close', function(reasonCode, description) {
+          console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+      });
+  })
+
+/*_______________________HASH_ALGOR_SIGNATURE_________________________________*/
 //creating hmac object 
 var hmac = crypto.createHmac('sha256', `'${secret}'`);
 //passing the data to be hashed
@@ -21,10 +60,9 @@ gen_hmac= data.digest('hex');
 //Printing the output on the console
 let sign =  + gen_hmac + timestamp + 'accounts';
 
-app.listen(PORT, ()=>{
-    console.log(`Listening on port ${PORT}`)
-})
+/*______________________REST API CONFIG WITH HASH_____________________________*/
 
+//http confg for REST api call
 const coinbaseProConfig = axios.create({
     baseURL: 'https://api.exchange.coinbase.com/currencies',
     headers: {
@@ -36,6 +74,9 @@ const coinbaseProConfig = axios.create({
     "CB-ACCESS-PASSPHRASE": `"${passPhrase}"`
      }
    })
+
+/*______________________API CALL______________________________________________*/
+
 //buy
  coinbaseProConfig({
     method: 'GET',
@@ -149,34 +190,5 @@ data.forEach(element => {
 })
 
 
-const CoinbasePro = require('coinbase-pro');
-var coinbaseWs = '';
 
-function connect() {
-    coinbaseWs = new CoinbasePro.WebsocketClient(
-        ['BTC-USD'],
-        'wss://ws-feed.pro.coinbase.com',
-        {
-            key: 'xxxx',
-            secret: 'xxxx',
-            passphrase: 'xxxx',
-        },
-        { channels: ['matches'] }
-    );  
-
-    coinbaseWs.on('message', async data => { 
-        console.log(data)  
-    });
-
-    coinbaseWs.on('error', err => {
-      console.error("Connection with Coinbase websocket failed with error: " + err);
-      console.log("Error stack trace: " + err.stack);
-    });
-
-    coinbaseWs.on('close', () => {
-      console.error("Connection with Coinbase websocket closed!");
-    });
-}
-
-connect();
   //${req.protocol}://${req.get('host')}${req.originalUrl}: moment().format()
