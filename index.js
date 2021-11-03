@@ -3,16 +3,22 @@ const express = require('express')
 const axios = require('axios')
 const dotenv = require('dotenv').config()
 const crypto = require("crypto");
+const Websocket = require('ws')
 const webSocketServer = require('websocket').server
 const jinky = express()
 const httpServer = require('http').createServer(jinky)
 //Config vars
-const PORT = 3000 || 5000
+const PORT = 5000
 const key = '5604a6f68fcf0ce39ea5aa020684b8dd'
 const secret = 'SlCBdWPvsWxVGQwIhZSXsqkPa/dy+AXIwq6fVRs1ZIpIW1rkrs3xT/RG3JkULNSVt1WqT0CwtYV+AGIzAeC+Dw=='
 const passPhrase = '8bystr00t3g'
 const timestamp = Math.floor(new Date().getTime() / 1000)
 
+//handles problems
+process.on("unhandledRejection", (reason, p) => {
+    console.log("Unhandled Rejection at: Promise", p, "reason:", reason);
+    // application specific logging, throwing an error, or other logic here
+  });
 /*___________________________SERVER___________________________________________*/
 
 //websocket server and http server & link /*no wss origin*/ listening on Ports  3000/5000
@@ -21,6 +27,7 @@ httpServer.listen(PORT, ()=> (console.log(new Date() + `Server is listening on p
 wsServer = new webSocketServer({
     httpServer: httpServer,
     autoAcceptConnections: true,
+    port: 5000
 })
 function originIsAllowed(origin) {
     // put logic here to detect whether the specified origin is allowed.
@@ -47,6 +54,7 @@ function originIsAllowed(origin) {
       });
       connection.on('close', function(reasonCode, description) {
           console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+          console.log(description.data)
       });
   })
 
@@ -75,7 +83,7 @@ const coinbaseProConfig = axios.create({
      }
    })
 
-/*______________________API CALL______________________________________________*/
+/*______________________API CALLS_____________________________________________*/
 
 //buy
  coinbaseProConfig({
@@ -91,9 +99,9 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/buy?currency=${x.id}`
         }).then(res=>{
-             console.log(res.data.data)
+             //console.log(res.data.data)
          }).catch(err=>{
-             console.log(err)
+            // console.log(err)
          })
         
     })
@@ -113,7 +121,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/sell?currency=${x.id}`
         }).then(res=>{
-            console.log(res.data.data)
+           // console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -136,7 +144,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/spot?currency=${x.id}`
         }).then(res=>{
-             console.log(res.data.data)
+            // console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -158,7 +166,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/time`
         }).then(res=>{
-             console.log(res.data.data)
+            // console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -180,7 +188,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/exchange-rates`
         }).then(res=>{
-            console.log(res.data)
+           // console.log(res.data)
          }).catch(err=>{
              //console.log(err)
          })
