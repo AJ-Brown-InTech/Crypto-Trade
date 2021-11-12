@@ -6,9 +6,9 @@ const crypto = require("crypto");
 const Websocket = require('ws')
 const webSocketServer = require('websocket').server
 const jinky = express()
-const httpServer = require('http').createServer(jinky)
+
 //Config vars
-const PORT = 5000
+const PORT = 5000 || 3000
 const key = '5604a6f68fcf0ce39ea5aa020684b8dd'
 const secret = 'SlCBdWPvsWxVGQwIhZSXsqkPa/dy+AXIwq6fVRs1ZIpIW1rkrs3xT/RG3JkULNSVt1WqT0CwtYV+AGIzAeC+Dw=='
 const passPhrase = '8bystr00t3g'
@@ -20,43 +20,30 @@ process.on("unhandledRejection", (reason, p) => {
     // application specific logging, throwing an error, or other logic here
   });
 /*___________________________SERVER___________________________________________*/
-
+const httpServer = require('http').createServer(jinky).listen(PORT, ()=> (console.log(new Date() + ` [HTTP]: Server is listening on port ${PORT}`)))
 //websocket server and http server & link /*no wss origin*/ listening on Ports  3000/5000
-httpServer.listen(PORT, ()=> (console.log(new Date() + `Server is listening on port ${PORT}`)))
+
 //websocket server
-wsServer = new webSocketServer({
-    httpServer: httpServer,
+wss = new webSocketServer({
+    httpServer,
     autoAcceptConnections: true,
-    port: 5000
+    port: `${PORT}`
 })
-function originIsAllowed(origin) {
-    // put logic here to detect whether the specified origin is allowed.
-    return true;
-  }
-  wsServer.on('request', function(request) {
-      if (!originIsAllowed(request.origin)) {
-        // Make sure we only accept requests from an allowed origin
-        request.reject();
-        console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
-        return;
-      }
-      var connection = request.accept('echo-protocol', request.origin);
-      console.log((new Date()) + ' Connection accepted.');
-      connection.on('message', function(message) {
-          if (message.type === 'utf8') {
-              console.log('Received Message: ' + message.utf8Data);
-              connection.sendUTF(message.utf8Data);
-          }
-          else if (message.type === 'binary') {
-              console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-              connection.sendBytes(message.binaryData);
-          }
-      });
-      connection.on('close', function(reasonCode, description) {
-          console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
-          console.log(description.data)
-      });
-  })
+
+wss.on('connection', (ws) =>{
+    console.log('[Server] a client was connected')
+   
+    ws.on('close', () => {console.log('[Server] Client disconnected.')})
+    ws.on('message', (message) =>{
+        console.log('[Server] Received message %s', message)
+        //broadcast to everyone else connected
+        wss.clients.forEach(function each(client){
+            if(client !== ws && client.readyState === Websocket.OPEN){
+                client.send(message)
+            }
+        })
+    })
+})
 
 /*_______________________HASH_ALGOR_SIGNATURE_________________________________*/
 //creating hmac object 
@@ -99,7 +86,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/buy?currency=${x.id}`
         }).then(res=>{
-             //console.log(res.data.data)
+             console.log(res.data.data)
          }).catch(err=>{
             // console.log(err)
          })
