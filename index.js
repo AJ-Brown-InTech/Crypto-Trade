@@ -9,9 +9,9 @@ const jinky = express()
 
 //Config vars
 const PORT = 5100 || 3000
-const key = '1174abe1067dfa921b19e99af2acb2a2'
-const secret = 'S0CseYSwHirJ+8dt4zDf7EXaW5kK/Gee8X/uhH24E3FfAdFpAAqvef1ERPVcsI7T0SP5TY9YzVxHOaU8Sb0jZA=='
-const passPhrase = 'sqqkwsb2l7d'
+const key = process.env.KEY
+const secret = process.env.SECRET
+const passPhrase = process.env.PHRASE
 const timestamp = Math.floor(new Date().getTime() / 1000)
 
 //handles problems
@@ -86,7 +86,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/buy?currency=${x.id}`
         }).then(res=>{
-             console.log(res.data.data)
+             //console.log(res.data.data)
          }).catch(err=>{
             // console.log(err)
          })
@@ -131,7 +131,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/prices/spot?currency=${x.id}`
         }).then(res=>{
-            // console.log(res.data.data)
+         console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -153,7 +153,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/time`
         }).then(res=>{
-            // console.log(res.data.data)
+            console.log(res.data.data)
          }).catch(err=>{
              //console.log(err)
          })
@@ -175,7 +175,7 @@ data.forEach(element => {
             method: 'GET',
             baseURL: `https://api.coinbase.com/v2/exchange-rates`
         }).then(res=>{
-           // console.log(res.data)
+        console.log(res.data)
          }).catch(err=>{
              //console.log(err)
          })
