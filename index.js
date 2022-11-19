@@ -8,10 +8,10 @@ const webSocketServer = require('websocket').server
 const jinky = express()
 
 //Config vars
-const PORT = 5000 || 3000
-const key = '5604a6f68fcf0ce39ea5aa020684b8dd'
-const secret = 'SlCBdWPvsWxVGQwIhZSXsqkPa/dy+AXIwq6fVRs1ZIpIW1rkrs3xT/RG3JkULNSVt1WqT0CwtYV+AGIzAeC+Dw=='
-const passPhrase = '8bystr00t3g'
+const PORT = 5100 || 3000
+const key = '1174abe1067dfa921b19e99af2acb2a2'
+const secret = 'S0CseYSwHirJ+8dt4zDf7EXaW5kK/Gee8X/uhH24E3FfAdFpAAqvef1ERPVcsI7T0SP5TY9YzVxHOaU8Sb0jZA=='
+const passPhrase = 'sqqkwsb2l7d'
 const timestamp = Math.floor(new Date().getTime() / 1000)
 
 //handles problems
